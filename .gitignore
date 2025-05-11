@@ -3,170 +3,822 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive AI Chatbot with Voice</title>
+    <title>Narrow AI with Voice</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
             margin: 0;
-            padding: 0;
-            background-color: #f4f7fa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
         }
         .chat-container {
-            width: 100%;
-            max-width: 400px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .chat-box {
-            height: 300px;
+            height: 400px;
             overflow-y: auto;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
             padding: 15px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-        }
-        .message {
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-        }
-        .message .content {
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        .user .content {
-            background: #dcf8c6;
-            align-self: flex-end;
-        }
-        .ai .content {
-            background: #e9eaed;
-            align-self: flex-start;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
         }
         .input-area {
             display: flex;
-            padding: 10px;
-            background: #fff;
-            border-top: 1px solid #ddd;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        .input-area input {
+        .input-field {
             flex-grow: 1;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 16px;
         }
-        .input-area button {
-            padding: 10px;
-            background: #4285f4;
+        .send-btn {
+            padding: 0 20px;
+            background-color: #4285f4;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
         }
-        .input-area button:hover {
-            background: #3367d6;
+        .send-btn:hover {
+            background-color: #3367d6;
         }
-        .voice-btn {
-            background: #34b7f1;
-            margin-left: 10px;
+        .settings-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f0f2f5;
+            border-radius: 8px;
         }
-        .voice-btn:hover {
-            background: #007bff;
+        .message {
+            margin-bottom: 15px;
+            clear: both;
         }
-        @media (max-width: 600px) {
-            .chat-container {
-                width: 100%;
-                margin: 10px;
-            }
+        .user-message .message-content {
+            float: right;
+            background-color: #dcf8c6;
+            border-radius: 18px 0 18px 18px;
+        }
+        .ai-message .message-content {
+            float: left;
+            background-color: #e9eaed;
+            border-radius: 0 18px 18px 18px;
+        }
+        .message-content {
+            max-width: 75%;
+            padding: 10px 15px;
+            display: inline-block;
+            word-wrap: break-word;
+        }
+        .info-section {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e8f0fe;
+            border-radius: 8px;
+        }
+        .voice-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        select, button {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .knowledge-entry {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .knowledge-entry input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #4285f4;
+            color: #4285f4;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .clear-btn {
+            background-color: #f44336;
+            color: white;
+            margin-left: auto;
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-box" id="chatBox"></div>
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Type a message..." onkeydown="if(event.key === 'Enter'){ sendMessage(); }">
-            <button onclick="sendMessage()">Send</button>
-            <button class="voice-btn" onclick="toggleVoice()">🎙️</button>
+    <div class="container">
+        <h1>Narrow AI with Voice</h1>
+        
+        <div class="tab-container">
+            <div class="tab active" data-tab="chat">Chat</div>
+            <div class="tab" data-tab="knowledge">Knowledge Base</div>
+            <div class="tab" data-tab="settings">Settings</div>
+        </div>
+        
+        <div class="tab-content active" id="chat-tab">
+            <div id="chat-history" class="chat-container"></div>
+            <div class="input-area">
+                <input type="text" id="user-input" class="input-field" placeholder="Ask me something...">
+                <button id="send-button" class="send-btn">Send</button>
+            </div>
+            <div class="settings-panel">
+                <div class="voice-controls">
+                    <label>
+                        <input type="checkbox" id="voice-toggle" checked>
+                        Enable voice
+                    </label>
+                    <select id="voice-select">
+                        <option value="">Loading voices...</option>
+                    </select>
+                </div>
+                <button id="clear-chat" class="clear-btn">Clear Chat</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="knowledge-tab">
+            <h2>AI Knowledge Base</h2>
+            <div class="knowledge-entry">
+                <input type="text" id="knowledge-key" placeholder="Question or Key">
+                <input type="text" id="knowledge-value" placeholder="Answer or Value">
+                <button id="add-knowledge">Add</button>
+            </div>
+            <div id="knowledge-list" style="margin-top: 20px;">
+                <p>Current Knowledge Base Items: <span id="knowledge-count">0</span></p>
+                <ul id="knowledge-items"></ul>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="settings-tab">
+            <h2>AI Settings</h2>
+            <div style="margin: 15px 0;">
+                <label>Domain Name:</label>
+                <input type="text" id="domain-name" value="Personal Assistant" style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin: 15px 0;">
+                <label>Confidence Threshold:</label>
+                <input type="range" id="confidence-slider" min="0" max="1" step="0.05" value="0.7" style="width: 100%;">
+                <span id="confidence-value">0.7</span>
+            </div>
+            <div style="margin: 15px 0;">
+                <label>Voice Rate:</label>
+                <input type="range" id="rate-slider" min="0.1" max="2" step="0.1" value="1" style="width: 100%;">
+                <span id="rate-value">1.0</span>
+            </div>
+            <div style="margin: 15px 0;">
+                <label>Voice Pitch:</label>
+                <input type="range" id="pitch-slider" min="0.1" max="2" step="0.1" value="1" style="width: 100%;">
+                <span id="pitch-value">1.0</span>
+            </div>
+            <div style="margin: 20px 0;">
+                <button id="save-settings" style="background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">Save Settings</button>
+                <button id="export-knowledge" style="background-color: #ff9800; color: white; padding: 10px 15px; border: none; border-radius: 4px; margin-left: 10px; cursor: pointer;">Export Knowledge</button>
+                <input type="file" id="import-file" style="display: none;">
+                <button id="import-knowledge" style="background-color: #2196F3; color: white; padding: 10px 15px; border: none; border-radius: 4px; margin-left: 10px; cursor: pointer;">Import Knowledge</button>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <p><strong>About this AI:</strong> This is a simple narrow AI built with JavaScript. It can answer questions based on its knowledge base, learn from interactions, and respond with both text and voice!</p>
         </div>
     </div>
 
     <script>
-        const chatBox = document.getElementById('chatBox');
-        const userInput = document.getElementById('userInput');
-        const voiceBtn = document.querySelector('.voice-btn');
-        let isListening = false;
-        let recognition;
-
-        // Initialize Speech Recognition
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = true;
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-            };
-            recognition.onend = () => {
-                isListening = false;
-                voiceBtn.textContent = '🎙️';
-            };
-        } else {
-            voiceBtn.disabled = true;
-        }
-
-        // Toggle voice recognition
-        function toggleVoice() {
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.start();
+        /**
+         * SimpleNarrowAI - A customizable narrow AI implementation
+         * 
+         * This class represents a simple narrow AI that can be trained
+         * on specific domains and used to answer questions or perform
+         * tasks within that limited domain. It supports both text and speech responses.
+         */
+        class SimpleNarrowAI {
+            constructor(domainName) {
+                this.domainName = domainName;
+                this.knowledgeBase = {};
+                this.rules = [];
+                this.confidenceThreshold = 0.7;
+                this.learningRate = 0.1;
+                this.voiceEnabled = true;
+                this.voiceSettings = {
+                    language: 'en-US',
+                    pitch: 1.0,
+                    rate: 1.0,
+                    volume: 1.0,
+                    voice: null
+                };
+                console.log(`Narrow AI for ${domainName} initialized`);
+                
+                // Initialize speech synthesis if available
+                this.speechSynthesis = window.speechSynthesis || null;
+                if (this.speechSynthesis) {
+                    // Load available voices and set a default English voice when voices are loaded
+                    this.voices = [];
+                    this.loadVoices();
+                    
+                    // Some browsers need this workaround to load voices
+                    if (this.speechSynthesis.onvoiceschanged !== undefined) {
+                        this.speechSynthesis.onvoiceschanged = this.loadVoices.bind(this);
+                    }
+                } else {
+                    console.warn("Speech synthesis not supported in this browser");
+                }
             }
-            isListening = !isListening;
-            voiceBtn.textContent = isListening ? '🔴' : '🎙️';
+            
+            /**
+             * Load available voices and set an English one as default
+             */
+            loadVoices() {
+                if (!this.speechSynthesis) return;
+                
+                this.voices = this.speechSynthesis.getVoices();
+                
+                // Try to find an English voice
+                let englishVoice = this.voices.find(voice => 
+                    voice.lang.includes('en-') && voice.localService
+                );
+                
+                // If no English voice with local service, try any English voice
+                if (!englishVoice) {
+                    englishVoice = this.voices.find(voice => 
+                        voice.lang.includes('en-')
+                    );
+                }
+                
+                // If still no English voice, use the first available
+                if (!englishVoice && this.voices.length > 0) {
+                    englishVoice = this.voices[0];
+                }
+                
+                if (englishVoice) {
+                    this.voiceSettings.voice = englishVoice;
+                }
+            }
+
+            /**
+             * Add knowledge to the AI's knowledge base
+             * @param {string} key - The concept or question
+             * @param {string} value - The answer or information
+             * @param {number} confidence - How confident the AI is in this information (0-1)
+             */
+            addKnowledge(key, value, confidence = 1.0) {
+                if (!this.knowledgeBase[key]) {
+                    this.knowledgeBase[key] = [];
+                }
+                this.knowledgeBase[key].push({ value, confidence });
+                return this;
+            }
+
+            /**
+             * Add a rule that the AI will use for reasoning
+             * @param {Function} condition - A function that returns true when the rule applies
+             * @param {Function} action - The action to take when the condition is met
+             */
+            addRule(condition, action) {
+                this.rules.push({ condition, action });
+                return this;
+            }
+
+            /**
+             * Query the AI to get an answer
+             * @param {string} query - The question or command
+             * @param {boolean} speak - Whether to speak the response (default: false)
+             * @returns {Object} - The AI's response with answer and confidence
+             */
+            query(query, speak = false) {
+                // Normalize query
+                const normalizedQuery = query.toLowerCase().trim();
+                
+                // First check direct knowledge matches
+                if (this.knowledgeBase[normalizedQuery]) {
+                    // Sort by confidence and get the highest confidence answer
+                    const answers = this.knowledgeBase[normalizedQuery].sort((a, b) => b.confidence - a.confidence);
+                    if (answers[0].confidence >= this.confidenceThreshold) {
+                        const response = {
+                            answer: answers[0].value,
+                            confidence: answers[0].confidence,
+                            source: "direct knowledge"
+                        };
+                        
+                        if (speak) this.speak(response.answer);
+                        return response;
+                    }
+                }
+                
+                // If no direct match, try to apply rules
+                for (const rule of this.rules) {
+                    if (rule.condition(normalizedQuery, this.knowledgeBase)) {
+                        const response = rule.action(normalizedQuery, this.knowledgeBase);
+                        if (speak) this.speak(response.answer);
+                        return response;
+                    }
+                }
+                
+                // Try to find similar questions using simple string matching
+                const bestMatch = this.findBestMatch(normalizedQuery);
+                if (bestMatch && bestMatch.similarity >= this.confidenceThreshold) {
+                    const response = {
+                        answer: this.knowledgeBase[bestMatch.key][0].value,
+                        confidence: bestMatch.similarity * this.knowledgeBase[bestMatch.key][0].confidence,
+                        source: "similar question"
+                    };
+                    
+                    if (speak) this.speak(response.answer);
+                    return response;
+                }
+                
+                // If all else fails
+                const response = {
+                    answer: `I don't have enough information about that in my ${this.domainName} knowledge base.`,
+                    confidence: 0,
+                    source: "default response"
+                };
+                
+                if (speak) this.speak(response.answer);
+                return response;
+            }
+            
+            /**
+             * Speak text using speech synthesis
+             * @param {string} text - The text to speak
+             * @returns {boolean} - Whether speech was successfully initiated
+             */
+            speak(text) {
+                if (!this.speechSynthesis || !this.voiceEnabled) {
+                    console.warn("Speech synthesis not available or disabled");
+                    return false;
+                }
+                
+                // Cancel any ongoing speech
+                this.speechSynthesis.cancel();
+                
+                // Create utterance
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Apply voice settings
+                utterance.lang = this.voiceSettings.language;
+                utterance.pitch = this.voiceSettings.pitch;
+                utterance.rate = this.voiceSettings.rate;
+                utterance.volume = this.voiceSettings.volume;
+                
+                // Set voice if available
+                if (this.voiceSettings.voice) {
+                    utterance.voice = this.voiceSettings.voice;
+                }
+                
+                // Speak the text
+                this.speechSynthesis.speak(utterance);
+                return true;
+            }
+
+            /**
+             * Find the closest match to the query in the knowledge base
+             * @param {string} query - The input query
+             * @returns {Object|null} - The best match and similarity score
+             */
+            findBestMatch(query) {
+                let bestMatch = null;
+                let highestSimilarity = 0;
+                
+                for (const key in this.knowledgeBase) {
+                    const similarity = this.calculateSimilarity(query, key);
+                    if (similarity > highestSimilarity) {
+                        highestSimilarity = similarity;
+                        bestMatch = { key, similarity };
+                    }
+                }
+                
+                return bestMatch;
+            }
+            
+            /**
+             * Calculate string similarity (very basic implementation)
+             * @param {string} s1 - First string
+             * @param {string} s2 - Second string
+             * @returns {number} - Similarity score between 0 and 1
+             */
+            calculateSimilarity(s1, s2) {
+                // Simple character overlap implementation
+                // A real AI would use more sophisticated algorithms
+                s1 = s1.toLowerCase();
+                s2 = s2.toLowerCase();
+                
+                if (s1 === s2) return 1.0;
+                if (s1.includes(s2) || s2.includes(s1)) return 0.9;
+                
+                // Count common words
+                const words1 = s1.split(/\s+/);
+                const words2 = s2.split(/\s+/);
+                let commonCount = 0;
+                
+                for (const w1 of words1) {
+                    if (words2.includes(w1)) commonCount++;
+                }
+                
+                return commonCount / Math.max(words1.length, words2.length);
+            }
+            
+            /**
+             * Learn from new information or feedback
+             * @param {string} query - The original query
+             * @param {string} correctAnswer - The right answer
+             * @param {number} userConfidence - How confident the user is in this correction (0-1)
+             */
+            learn(query, correctAnswer, userConfidence = 1.0) {
+                const normalizedQuery = query.toLowerCase().trim();
+                
+                if (!this.knowledgeBase[normalizedQuery]) {
+                    // New knowledge
+                    this.addKnowledge(normalizedQuery, correctAnswer, userConfidence);
+                } else {
+                    // Existing knowledge to update
+                    const existingIndex = this.knowledgeBase[normalizedQuery].findIndex(
+                        k => k.value.toLowerCase() === correctAnswer.toLowerCase()
+                    );
+                    
+                    if (existingIndex >= 0) {
+                        // Update confidence of existing knowledge
+                        const current = this.knowledgeBase[normalizedQuery][existingIndex];
+                        current.confidence = current.confidence + 
+                            this.learningRate * (userConfidence - current.confidence);
+                    } else {
+                        // Add as new alternative answer
+                        this.knowledgeBase[normalizedQuery].push({
+                            value: correctAnswer,
+                            confidence: userConfidence * 0.8 // Start a bit lower than user confidence
+                        });
+                    }
+                }
+                
+                console.log(`Learned new information about "${normalizedQuery}"`);
+                return this;
+            }
+            
+            /**
+             * Set the confidence threshold for answers
+             * @param {number} threshold - Number between 0 and 1
+             */
+            setConfidenceThreshold(threshold) {
+                if (threshold >= 0 && threshold <= 1) {
+                    this.confidenceThreshold = threshold;
+                }
+                return this;
+            }
+            
+            /**
+             * Export the AI's knowledge base
+             * @returns {Object} - The current knowledge base
+             */
+            exportKnowledge() {
+                return JSON.stringify({
+                    domain: this.domainName,
+                    knowledge: this.knowledgeBase,
+                    confidenceThreshold: this.confidenceThreshold
+                }, null, 2);
+            }
+            
+            /**
+             * Import a knowledge base
+             * @param {string|Object} data - The knowledge base to import
+             */
+            importKnowledge(data) {
+                let knowledge;
+                
+                if (typeof data === 'string') {
+                    knowledge = JSON.parse(data);
+                } else {
+                    knowledge = data;
+                }
+                
+                if (knowledge.domain) {
+                    this.domainName = knowledge.domain;
+                }
+                
+                if (knowledge.knowledge) {
+                    this.knowledgeBase = knowledge.knowledge;
+                }
+                
+                if (knowledge.confidenceThreshold) {
+                    this.confidenceThreshold = knowledge.confidenceThreshold;
+                }
+                
+                console.log(`Imported knowledge base for ${this.domainName}`);
+                return this;
+            }
+            
+            /**
+             * Configure voice settings
+             * @param {Object} settings - Voice configuration options
+             * @param {string} [settings.language] - BCP 47 language tag (e.g., 'en-US')
+             * @param {number} [settings.pitch] - Voice pitch (0.1 to 2.0)
+             * @param {number} [settings.rate] - Speech rate (0.1 to 10.0)
+             * @param {number} [settings.volume] - Volume (0.0 to 1.0)
+             * @param {string} [settings.voiceName] - Name of voice to use
+             * @returns {this} - For method chaining
+             */
+            configureVoice(settings = {}) {
+                // Update voice settings with provided values
+                if (settings.language !== undefined) {
+                    this.voiceSettings.language = settings.language;
+                }
+                
+                if (settings.pitch !== undefined && settings.pitch >= 0.1 && settings.pitch <= 2.0) {
+                    this.voiceSettings.pitch = settings.pitch;
+                }
+                
+                if (settings.rate !== undefined && settings.rate >= 0.1 && settings.rate <= 10.0) {
+                    this.voiceSettings.rate = settings.rate;
+                }
+                
+                if (settings.volume !== undefined && settings.volume >= 0 && settings.volume <= 1.0) {
+                    this.voiceSettings.volume = settings.volume;
+                }
+                
+                // If a specific voice name is provided, try to find it
+                if (settings.voiceName && this.voices && this.voices.length > 0) {
+                    const requestedVoice = this.voices.find(v => 
+                        v.name === settings.voiceName || 
+                        v.name.toLowerCase().includes(settings.voiceName.toLowerCase())
+                    );
+                    
+                    if (requestedVoice) {
+                        this.voiceSettings.voice = requestedVoice;
+                    }
+                }
+                
+                return this;
+            }
+            
+            /**
+             * Enable or disable voice responses
+             * @param {boolean} enabled - Whether voice should be enabled
+             * @returns {this} - For method chaining
+             */
+            setVoiceEnabled(enabled = true) {
+                this.voiceEnabled = enabled;
+                return this;
+            }
+            
+            /**
+             * List available voices
+             * @returns {Array} - Array of available voice objects
+             */
+            getAvailableVoices() {
+                if (!this.speechSynthesis) return [];
+                return this.voices.map(voice => ({
+                    name: voice.name,
+                    language: voice.lang,
+                    default: voice.default,
+                    localService: voice.localService
+                }));
+            }
+            
+            /**
+             * Get knowledge base entries
+             * @returns {Array} - Array of knowledge entries
+             */
+            getKnowledgeEntries() {
+                return Object.entries(this.knowledgeBase).map(([key, values]) => {
+                    return {
+                        key,
+                        values
+                    };
+                });
+            }
         }
 
-        // Send message
-        function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create AI instance
+            const ai = new SimpleNarrowAI("Personal Assistant");
+            
+            // Initialize with some starter knowledge
+            ai.addKnowledge(
+                "hello",
+                "Hello! I'm your personal AI assistant. How can I help you today?",
+                1.0
+            );
+            
+            ai.addKnowledge(
+                "hi",
+                "Hi there! How can I assist you?",
+                1.0
+            );
+            
+            ai.addKnowledge(
+                "what can you do",
+                "I can answer questions based on my knowledge base, learn from our conversations, and respond with both text and voice. Feel free to teach me new things!",
+                1.0
+            );
+            
+            ai.addKnowledge(
+                "who made you",
+                "I'm a simple narrow AI created with JavaScript. I'm designed to demonstrate basic AI capabilities with text and voice responses.",
+                1.0
+            );
+            
+            ai.addKnowledge(
+                "how do you work",
+                "I work by matching your questions to my knowledge base. I can find exact matches or similar questions, and I use confidence scores to determine the best answer. I can also learn from your feedback.",
+                1.0
+            );
 
-            appendMessage('user', message);
-            userInput.value = '';
-            getAIResponse(message);
-        }
-
-        // Append message to chat
-        function appendMessage(sender, message) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message', sender);
-            const content = document.createElement('div');
-            content.classList.add('content');
-            content.textContent = message;
-            messageElement.appendChild(content);
-            chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Get AI response (simulated)
-        function getAIResponse(userMessage) {
-            const aiMessage = `AI: You said "${userMessage}".`;
-            appendMessage('ai', aiMessage);
-            speak(aiMessage);
-        }
-
-        // Speak text
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            window.speechSynthesis.speak(utterance);
-        }
-    </script>
-</body>
-</html>
+            // Add a rule for greetings
+            ai.addRule(
+                (query) => /^(hey|hello there|greetings|good (morning|afternoon|evening))$/i.test(query),
+                () => ({
+                    answer: "Hello! I'm your AI assistant. How can I help you today?",
+                    confidence: 0.9,
+                    source: "greeting rule"
+                })
+            );
+            
+            // DOM elements
+            const chatHistory = document.getElementById('chat-history');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const voiceToggle = document.getElementById('voice-toggle');
+            const voiceSelect = document.getElementById('voice-select');
+            const clearChatButton = document.getElementById('clear-chat');
+            const confidenceSlider = document.getElementById('confidence-slider');
+            const confidenceValue = document.getElementById('confidence-value');
+            const rateSlider = document.getElementById('rate-slider');
+            const rateValue = document.getElementById('rate-value');
+            const pitchSlider = document.getElementById('pitch-slider');
+            const pitchValue = document.getElementById('pitch-value');
+            const domainNameInput = document.getElementById('domain-name');
+            const saveSettingsButton = document.getElementById('save-settings');
+            const exportKnowledgeButton = document.getElementById('export-knowledge');
+            const importKnowledgeButton = document.getElementById('import-knowledge');
+            const importFileInput = document.getElementById('import-file');
+            const knowledgeKey = document.getElementById('knowledge-key');
+            const knowledgeValue = document.getElementById('knowledge-value');
+            const addKnowledgeButton = document.getElementById('add-knowledge');
+            const knowledgeItems = document.getElementById('knowledge-items');
+            const knowledgeCount = document.getElementById('knowledge-count');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Initialize UI
+            function initUI() {
+                // Set initial slider values
+                confidenceSlider.value = ai.confidenceThreshold;
+                confidenceValue.textContent = ai.confidenceThreshold;
+                rateSlider.value = ai.voiceSettings.rate;
+                rateValue.textContent = ai.voiceSettings.rate;
+                pitchSlider.value = ai.voiceSettings.pitch;
+                pitchValue.textContent = ai.voiceSettings.pitch;
+                domainNameInput.value = ai.domainName;
+                
+                // Update voice selection dropdown
+                updateVoiceList();
+                
+                // Display initial knowledge base
+                updateKnowledgeList();
+                
+                // Welcome message
+                setTimeout(() => {
+                    addMessage("Hello! I'm your personal AI assistant. How can I help you today?", false);
+                }, 500);
+            }
+            
+            // Add message to chat
+            function addMessage(text, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = isUser ? 'message user-message' : 'message ai-message';
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'message-content';
+                bubble.textContent = text;
+                
+                messageDiv.appendChild(bubble);
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+            
+            // Send a message
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                // Add user message to chat
+                addMessage(message, true);
+                
+                // Get AI response
+                const useVoice = voiceToggle.checked;
+                const response = ai.query(message, useVoice);
+                
+                // Add AI response to chat
+                addMessage(response.answer, false);
+                
+                // Learn from this interaction (simple auto-learning for direct questions)
+                if (message.endsWith('?') && response.confidence < 0.5) {
+                    // We might want to ask for feedback for low confidence answers
+                    // but for this demo we'll skip that
+                }
+                
+                // Clear input
+                userInput.value = '';
+                userInput.focus();
+            }
+            
+            // Update the voice list dropdown
+            function updateVoiceList() {
+                const voices = ai.getAvailableVoices();
+                // Clear the dropdown
+                voiceSelect.innerHTML = '';
+                
+                if (voices.length > 0) {
+                    voices.forEach(voice => {
+                        const option = document.createElement('option');
+                        option.value = voice.name;
+                        option.textContent = `${voice.name} (${voice.language})`;
+                        
+                        // Select current voice
+                        if (ai.voiceSettings.voice && voice.name === ai.voiceSettings.voice.name) {
+                            option.selected = true;
+                        }
+                        
+                        voiceSelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = 'No voices available';
+                    voiceSelect.appendChild(option);
+                    voiceSelect.disabled = true;
+                }
+            }
+            
+            // Update knowledge list display
+            function updateKnowledgeList() {
+                const entries = ai.getKnowledgeEntries();
+                knowledgeItems.innerHTML = '';
+                knowledgeCount.textContent = entries.length;
+                
+                entries.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>"${entry.key}"</strong>: 
+                        "${entry.values[0].value}" 
+                        <em>(Confidence: ${entry.values[0].confidence.toFixed(2)})</em>
+                    `;
+                    knowledgeItems.appendChild(li);
+                });
+            }
+            
+            // Switch tabs
+            function switchTab(tabId) {
+                tabs.forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.dataset.tab === tabId) {
+                        tab.classList.add('active');
+                    }
+                });
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-tab`) {
+                        content.classList.add('active');
+                    }
+                });
+            }
+            
+            // Save settings
+            function saveSettings() {
+                ai.setConfidenceThreshold(parseFloat(confi
